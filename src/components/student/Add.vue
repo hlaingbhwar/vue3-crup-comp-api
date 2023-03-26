@@ -1,12 +1,19 @@
 <script setup>
 import { reactive } from 'vue';
 import { RouterLink } from 'vue-router';
+import useStudent from '../../composables/studentApi';
+
+const { studentData, error, statusCode, createStudent } = useStudent();
 const formData = reactive({
     stuname: "",
     email: "",
 });
 const handleAddStudentForm = async () => {
-    console.log("Form Submitted", formData);
+    // console.log("Form Submitted", formData);
+    await createStudent(formData);
+    if (statusCode.value === 201) {
+        document.getElementById("AddStudentForm").reset();
+    }
 }
 </script>
 
@@ -50,8 +57,13 @@ const handleAddStudentForm = async () => {
                 </button>
             </RouterLink>
         </div>
-
     </form>
+    <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded font-medium" role="alert" v-if="error">
+        Oops! Error encountered: {{ error.message }}
+    </div>
+    <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded font-medium" role="alert" v-if="statusCode === 201">
+        Student Added Successfully
+    </div>
 </template>
 
 <style scoped></style>

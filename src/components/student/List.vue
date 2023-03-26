@@ -1,10 +1,17 @@
 <script setup>
-import { EyeIcon, PencilIcon, TrashIcon, UserPlusIcon } from '@heroicons/vue/24/solid'
+import { EyeIcon, PencilIcon, TrashIcon, UserPlusIcon } from '@heroicons/vue/24/solid';
+import { onMounted } from 'vue';
 import { RouterLink } from 'vue-router';
+import useStudent from '../../composables/studentApi';
+
+const { studentData, error, statusCode, delError, getAllStudent, destoreyStudent } = useStudent();
+onMounted(getAllStudent);
 
 const deleteStudent = async (id) => {
     if (!window.confirm("Are you sure?")) return;
-    console.log("Deleed");
+    // console.log("Delete", id);
+    await destoreyStudent(id);
+    await getAllStudent();
 }
 </script>
 
@@ -23,33 +30,43 @@ const deleteStudent = async (id) => {
                 </RouterLink>
             </div>
         </div>
+
+        <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded font-medium" role="alert" v-if="error">
+            Oops! Error encountered: {{ error.message }}
+        </div>
+        <table class="table-auto w-full" v-else-if="studentData">
+            <thead class="bg-slate-600 text-white">
+                <tr>
+                    <th class="py-1">No</th>
+                    <th class="py-1">Name</th>
+                    <th class="py-1">Email</th>
+                    <th class="py-1">Action</th>
+                </tr>
+            </thead>
+            <tbody class="text-center">
+                <tr v-for="({ id, stuname, email }, i) in studentData" :key="id">
+                    <td class="py-2">{{ ++i }}</td>
+                    <td class="py-2">{{ stuname }}</td>
+                    <td class="py-2">{{ email }}</td>
+                    <td class="py-2">
+                        <RouterLink :to="{ name: 'view', params: { id: id } }">
+                            <EyeIcon class="h-6 w-6 text-blue-500 inline cursor-pointer" />
+                        </RouterLink>
+                        <RouterLink :to="{ name: 'edit', params: { id: id } }">
+                            <PencilIcon class="text-emerald-500 h-6 w-6 inline cursor-pointer" />
+                        </RouterLink>
+                        <TrashIcon class="text-red-500 h-6 w-6 inline cursor-pointer" @click="deleteStudent(id)" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded font-medium" role="alert" v-if="delError">
+            Unable to Delete Student: {{ delError.message }}
+        </div>
+        <div class="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded font-medium" role="alert" v-if="statusCode === 200">
+            Student Deleted Successfully
+        </div>
     </div>
-    <table class="table-auto w-full">
-        <thead class="bg-slate-600 text-white">
-            <tr>
-                <th class="py-1">No</th>
-                <th class="py-1">Name</th>
-                <th class="py-1">Email</th>
-                <th class="py-1">Action</th>
-            </tr>
-        </thead>
-        <tbody class="text-center">
-            <tr>
-                <td class="py-2">1</td>
-                <td class="py-2">Sonan</td>
-                <td class="py-2">Sonan@gmail.com</td>
-                <td class="py-2">
-                    <RouterLink :to="{ name: 'view', params: { id: 1 } }">
-                        <EyeIcon class="h-6 w-6 text-blue-500 inline cursor-pointer" />
-                    </RouterLink>
-                    <RouterLink :to="{ name: 'edit', params: { id: 1 } }">
-                        <PencilIcon class="text-emerald-500 h-6 w-6 inline cursor-pointer" />
-                    </RouterLink>
-                    <TrashIcon class="text-red-500 h-6 w-6 inline cursor-pointer" @click="deleteStudent(1)" />
-                </td>
-            </tr>
-        </tbody>
-    </table>
 </template>
 
 <style scoped></style>
